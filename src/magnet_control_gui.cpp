@@ -1,3 +1,9 @@
+/******************************************************
+* magnet_conroller.cpp
+* This cpp makes "magnet_control_gui" node.
+* The node publish "magnet_enable" topic if you push buttons.
+*******************************************************/
+
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -16,11 +22,12 @@
 
 using namespace std::chrono_literals;
 
+// Define ROS node
 class MagnetControlGUINode : public rclcpp::Node
 {
   public:
     MagnetControlGUINode()
-    : Node("magnet_control_gui"), count_(0)
+    : Node("magnet_control_gui")
     {
       publisher_ = this->create_publisher<std_msgs::msg::String>("magnet_enable", 10);
     }
@@ -41,9 +48,9 @@ class MagnetControlGUINode : public rclcpp::Node
   private:
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
-    size_t count_;
 };
 
+// Make buttons and define these actions
 class GUIButtons : public QWidget {
   public:
     GUIButtons(QWidget *parent = nullptr) : 
@@ -60,11 +67,11 @@ class GUIButtons : public QWidget {
         connect(onBtn, &QPushButton::clicked, this, &GUIButtons::OnON);
         connect(offBtn, &QPushButton::clicked, this, &GUIButtons::OnOFF);
     }
-    void closeEvent(QCloseEvent *event){
+    void closeEvent(QCloseEvent *event){  // when user closes GUI window 
       if (executor_pointer_ == nullptr){
         return;
       }
-      executor_pointer_->cancel();
+      executor_pointer_->cancel();  // stop ROS node
       rclcpp::shutdown();
       event->accept();
     }
@@ -76,12 +83,12 @@ class GUIButtons : public QWidget {
         std::cout<<"node is nullptr"<<std::endl;
         return -1;
       }
-      n_->sendTopicOFF();
+      n_->sendTopicOFF(); // initially disable magnet to safe 
       node_ = n_;
       return 0;
     }
   private slots:
-    void OnON(){ 
+    void OnON(){  // ON button is pushed
       if (node_ == nullptr){
         std::cout<<"node is nullptr"<<std::endl;
         return;
@@ -89,7 +96,7 @@ class GUIButtons : public QWidget {
       lbl->setText("magnet_enable : ON");
       node_->sendTopicON();
     }
-    void OnOFF(){
+    void OnOFF(){  // OFF button is pushed
       if (node_ == nullptr){
         std::cout<<"node is nullptr"<<std::endl;
         return;
@@ -107,9 +114,9 @@ class GUIButtons : public QWidget {
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  QApplication app(argc, argv);
+  QApplication app(argc, argv); // QApplication is standard qt class to process GUI app.
 
-  rclcpp::executors::SingleThreadedExecutor executor;
+  rclcpp::executors::SingleThreadedExecutor executor; // this manage ros node.
   
   GUIButtons window;
   window.setROSExecutor(&executor);
@@ -119,9 +126,9 @@ int main(int argc, char * argv[])
 
   auto node = std::make_shared<MagnetControlGUINode>();
   window.setROSNode(node);
-  executor.add_node(node);
+  executor.add_node(node);  // instance node is maybe created here
 
-  app.exec();
+  app.exec();               // loop process of GUI app
   executor.spin();
   rclcpp::shutdown();
   return 0;

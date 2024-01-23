@@ -1,5 +1,4 @@
-#from launch
-#from launch_ros.actions
+
 import launch
 import launch_ros.actions
 import launch.event_handlers
@@ -20,7 +19,7 @@ def generate_launch_description():
     return launch.LaunchDescription([
         controller,
         gui,
-        launch.actions.RegisterEventHandler(
+        launch.actions.RegisterEventHandler(    # if gui is closed, cntroller will also closed
             event_handler=launch.event_handlers.OnProcessExit(
                 target_action=gui,
                 on_exit=[launch.actions.EmitEvent(event=launch.events.Shutdown())],

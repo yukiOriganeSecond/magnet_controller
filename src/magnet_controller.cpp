@@ -1,3 +1,9 @@
+/******************************************************
+* magnet_conroller.cpp
+* This cpp makes "magnet_controller" node.
+* The node send GPIO signal to the magnet controller.
+*******************************************************/
+
 #include <memory>
 #include <chrono>
 #include <functional>
@@ -14,7 +20,7 @@ const int CONTROL_PIN = 16; // set magnet control pin as pin 16
 const int FEEDBACK_PIN = 18; // set magnet feedback pin (read state of magnet controller) as pin 18
 std::string message;
 
-#define USE_FEEDBACK_PIN
+//#define USE_FEEDBACK_PIN  // Please remove this comment out if you receive feedback from magnet controller board.
 
 class MagnetController : public rclcpp::Node
 {
@@ -54,11 +60,11 @@ class MagnetController : public rclcpp::Node
       }else{
         feedback_result.data = "OFF";
       }
+      RCLCPP_INFO(this->get_logger(), "Receive topic: '%s', Feedback result: '%s'", message.c_str(), feedback_result.data.c_str());
 #else
-        feedback_result.data = "none";
-#endif
-      //RCLCPP_INFO(this->get_logger(), "Receive topic: '%s', Feedback result: '%s'", message.c_str(), feedback_result.data.c_str());
+      feedback_result.data = "none";
       RCLCPP_INFO(this->get_logger(), "Receive topic: '%s'", message.c_str());
+#endif
       publisher_->publish(feedback_result);
     }
     rclcpp::TimerBase::SharedPtr timer_;
