@@ -29,6 +29,10 @@ class MagnetController : public rclcpp::Node
       500ms, std::bind(&MagnetController::timer_callback, this));
     }
 
+    ~MagnetController(){
+      GPIO::output(CONTROL_PIN, GPIO::LOW); // when close, make magnet off to safety
+    }
+
   private:
     void topic_callback(const std_msgs::msg::String::SharedPtr msg) const
     {
@@ -53,7 +57,8 @@ class MagnetController : public rclcpp::Node
 #else
         feedback_result.data = "none";
 #endif
-      RCLCPP_INFO(this->get_logger(), "Receive topic: '%s', Feedback result: '%s'", message.c_str(), feedback_result.data.c_str());
+      //RCLCPP_INFO(this->get_logger(), "Receive topic: '%s', Feedback result: '%s'", message.c_str(), feedback_result.data.c_str());
+      RCLCPP_INFO(this->get_logger(), "Receive topic: '%s'", message.c_str());
       publisher_->publish(feedback_result);
     }
     rclcpp::TimerBase::SharedPtr timer_;
